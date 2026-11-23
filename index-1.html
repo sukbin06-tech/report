@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#172554">
+<title>공동 보고</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;color:#172033;background:#f3f5f9}
+*{box-sizing:border-box}
+body{margin:0}
+header{background:#172554;color:white;padding:18px 16px 16px}
+header h1{font-size:21px;margin:0 0 5px}
+header p{font-size:12px;margin:0;color:#dbeafe}
+main{max-width:760px;margin:0 auto;padding:14px}
+.panel{background:white;border:1px solid #e4e8f0;border-radius:16px;padding:16px;margin:0 0 14px;box-shadow:0 3px 12px #1725540a}
+h2{font-size:17px;margin:0 0 12px}
+h3{font-size:15px;margin:0 0 10px}
+.muted{color:#64748b;font-size:12px;line-height:1.55}
+label{display:block;font-size:13px;font-weight:650;margin:10px 0 6px}
+input,textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:11px 12px;background:#fff;color:#172033}
+textarea{min-height:72px;resize:vertical}
+button{font:inherit;border:0;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+.primary{background:#1d4ed8;color:white}
+.secondary{background:#e8eefc;color:#1e3a8a}
+.ghost{background:#f1f5f9;color:#334155}
+.danger{background:#fee2e2;color:#991b1b}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.actions button{flex:1}
+.hidden{display:none!important}
+.notice{padding:11px 12px;border-radius:10px;background:#eff6ff;color:#1e40af;font-size:13px;line-height:1.5;margin:10px 0}
+.error{background:#fff1f2;color:#9f1239}
+.success{background:#ecfdf5;color:#065f46}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.stat{border:1px solid #e2e8f0;border-radius:12px;padding:11px}
+.stat .name{font-size:12px;color:#475569;font-weight:700;margin-bottom:7px}
+.stat .numbers{display:flex;gap:12px;font-size:13px}
+.xnum{color:#475569}.onum{color:#1d4ed8}
+.stat small{display:block;color:#64748b;font-size:11px;margin-top:4px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.topline button{padding:8px 10px;font-size:12px}
+.member{border:1px solid #e2e8f0;border-radius:14px;padding:13px;margin:10px 0}
+.member.mine{border:2px solid #93c5fd;background:#f8fbff}
+.member-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.member-name{font-weight:800;font-size:15px}
+.me-tag{font-size:10px;color:#1d4ed8;background:#dbeafe;border-radius:20px;padding:4px 7px}
+.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.field{border:1px solid #e8edf4;border-radius:10px;padding:8px}
+.field-name{font-size:11px;color:#64748b;margin-bottom:7px;min-height:16px}
+.pills{display:flex;gap:6px}
+.pill{flex:1;padding:7px 0;font-size:12px;background:#eef2f7;color:#64748b}
+.pill.active-x{background:#e2e8f0;color:#1e293b;outline:1px solid #94a3b8}
+.pill.active-o{background:#dbeafe;color:#1d4ed8;outline:1px solid #60a5fa}
+.pill.readonly{cursor:default}
+.note-view{font-size:12px;line-height:1.5;color:#475569;background:#f8fafc;border-radius:9px;padding:9px;margin-top:9px;white-space:pre-wrap;overflow-wrap:anywhere}
+.note-label{font-size:11px;font-weight:700;color:#64748b;margin-top:12px}
+.date-row{display:flex;align-items:center;gap:8px}
+.date-row input{flex:1}
+code{background:#f1f5f9;padding:3px 6px;border-radius:6px;word-break:break-all}
+footer{text-align:center;color:#94a3b8;font-size:11px;padding:14px}
+@media(min-width:600px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.field-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <h1>공동 보고</h1>
+  <p>방 코드로 모두가 함께 · 약 3초마다 자동 동기화</p>
+</header>
+<main>
+  <section id="configView" class="panel hidden">
+    <h2>서버 연결 (처음 한 번)</h2>
+    <p class="muted">Supabase의 Project URL과 공개용 키(anon / publishable)를 입력하세요. 이 기기에만 저장됩니다.</p>
+    <label for="projectUrl">Project URL</label>
+    <input id="projectUrl" placeholder="https://xxxx.supabase.co">
+    <label for="publicKey">공개용 키</label>
+    <textarea id="publicKey" placeholder="sb_publishable_... 또는 eyJ..."></textarea>
+    <div class="actions"><button class="primary" id="saveConfig">저장</button></div>
+    <div id="configMsg" class="notice error hidden"></div>
+  </section>
+
+  <section id="roomView" class="panel hidden">
+    <h2>방 입장</h2>
+    <p class="muted">같은 방 코드를 입력한 사람끼리 같은 기록을 봅니다. 새 코드를 입력하면 새 방이 만들어집니다. 코드는 6자 이상, 남들이 추측하기 어렵게 정하세요.</p>
+    <label for="roomCode">방 코드</label>
+    <input id="roomCode" maxlength="64" autocapitalize="off" placeholder="예: team-2026-abc">
+    <div class="actions"><button class="primary" id="enterRoom">입장</button></div>
+    <div id="roomMsg" class="notice error hidden"></div>
+    <div class="actions"><button class="ghost" id="resetConfig">서버 연결 설정 다시 입력</button></div>
+  </section>
+
+  <div id="appView" class="hidden">
+    <section class="panel">
+      <div class="topline">
+        <div><h2 style="margin-bottom:3px">전체 현황</h2><div class="muted" id="memberCount"></div><div class="muted" id="statusText"></div></div>
+        <div style="display:flex;gap:6px"><button class="ghost" id="toggleRoster">인원 관리</button><button class="ghost" id="leaveRoom">방 나가기</button></div>
+      </div>
+      <div class="muted" style="margin:10px 0 8px">보고 날짜</div>
+      <div class="date-row"><input id="reportDate" type="date"><button class="secondary" id="shareText">요약 복사</button></div>
+      <div id="stats" class="stats" style="margin-top:13px"></div>
+      <div class="notice">미입력 기록은 X로 집계됩니다. 기록은 최근 7일만 보관되고, 이후에는 자동으로 삭제됩니다.</div>
+      <div id="copyMsg" class="notice success hidden"></div>
+    </section>
+
+    <section id="rosterView" class="panel hidden">
+      <h2>인원 관리 <span class="muted" id="rosterCount"></span></h2>
+      <div id="rosterList"></div>
+      <label for="newName">새 인원 이름</label>
+      <input id="newName" maxlength="20" placeholder="예: 홍길동">
+      <div class="actions"><button class="primary" id="addMember">추가</button></div>
+      <div id="rosterMsg" class="notice error hidden"></div>
+    </section>
+
+    <section class="panel">
+      <h2>개인별 보고 내용</h2>
+      <p class="muted">방에 들어온 누구나 모든 인원의 기록을 수정할 수 있습니다.</p>
+      <div id="members"></div>
+    </section>
+  </div>
+  <footer>공동 보고 · 방 코드 공유 방식 · 최대 8명</footer>
+</main>
+
+<script>
+(() => {
+  // 서버 정보를 여기에 직접 넣으면 모든 사용자가 입력 없이 바로 사용합니다.
+  const EMBED_URL = "";
+  const EMBED_KEY = "";
+
+  const KEY_CFG = "community_report_cfg_v2", KEY_ROOM = "community_report_room_v2", MAX = 8, POLL_MS = 3000;
+  const fields = [
+    ["evening_rollcall","저녁점호 열외"],
+    ["morning_rollcall","아침점호 열외"],
+    ["reading_lights","독서연등"],
+    ["religion","종교"],
+    ["special","특이사항"],
+    ["dinner_absence","저녁식집열외"]
+  ];
+  const $ = id => document.getElementById(id);
+  const show = (id, yes=true) => $(id).classList.toggle("hidden", !yes);
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+  const flash = (id, text) => { const el=$(id); el.textContent=text; show(id,true); clearTimeout(el._t); el._t=setTimeout(()=>show(id,false),2500); };
+  const lget = k => { try { return localStorage.getItem(k); } catch { return null; } };
+  const lset = (k,v) => { try { localStorage.setItem(k,v); } catch {} };
+  const ldel = k => { try { localStorage.removeItem(k); } catch {} };
+
+  let cfg = (EMBED_URL && EMBED_KEY) ? {url:EMBED_URL.replace(/\/+$/,""), key:EMBED_KEY} : (() => { try { return JSON.parse(lget(KEY_CFG)||"null"); } catch { return null; } })();
+  let room = lget(KEY_ROOM) || "";
+  let data = {members:[], reports:{}}, lastJson = "", drafts = {}, timer = null, loading = false, needsRender = false, online = null;
+
+  async function rpc(fn, args) {
+    const r = await fetch(`${cfg.url}/rest/v1/rpc/${fn}`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json", apikey:cfg.key},
+      body:JSON.stringify(args)
+    });
+    const t = await r.text(); let j = null;
+    try { j = t ? JSON.parse(t) : null; } catch {}
+    if (!r.ok) throw new Error((j && j.message) || ("서버 오류 " + r.status));
+    return j;
+  }
+  const minDate = () => { const d=new Date(); d.setDate(d.getDate()-6); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+  const clampDate = () => { const el=$("reportDate"); el.min=minDate(); if (!el.value || el.value < el.min) el.value = el.min <= today() ? (el.value && el.value > el.min ? el.value : el.min) : today(); };
+  const date = () => { clampDate(); return $("reportDate").value; };
+  function rec(id) {
+    const r = data.reports[id] || {}, out = {};
+    fields.forEach(([k]) => out[k] = r[k]==="O" ? "O" : "X");
+    out.note = drafts[id] !== undefined ? drafts[id] : (r.note || "");
+    return out;
+  }
+  const editing = () => { const a=document.activeElement; return !!a && (a.tagName==="TEXTAREA"||a.tagName==="INPUT") && !!a.closest("#members,#rosterList"); };
+
+  function setView(v) { ["configView","roomView","appView"].forEach(id => show(id, id===v)); }
+  function setStatus() {
+    $("statusText").textContent = online===null ? "" : online ? "● 연결됨 · 자동 동기화 중" : "○ 연결 안 됨 · 재시도 중";
+    $("statusText").style.color = online===false ? "#9f1239" : "#64748b";
+  }
+  function renderStats() {
+    const ms = data.members;
+    $("memberCount").textContent = `방 ${room} · 등록 ${ms.length}/${MAX}명`;
+    $("stats").innerHTML = fields.map(([k,label]) => {
+      let o = 0; ms.forEach(m => { if (rec(m.id)[k]==="O") o++; });
+      return `<div class="stat"><div class="name">${esc(label)}</div><div class="numbers"><span class="xnum">X <b>${ms.length-o}명</b></span><span class="onum">O <b>${o}명</b></span></div><small>전체 ${ms.length}명</small></div>`;
+    }).join("");
+  }
+  function renderMembers() {
+    $("members").innerHTML = data.members.length ? data.members.map(m => {
+      const r = rec(m.id);
+      const st = fields.map(([k,label]) => `<div class="field"><div class="field-name">${esc(label)}</div><div class="pills">
+        <button class="pill ${r[k]==="X"?"active-x":""}" data-a="set" data-id="${m.id}" data-f="${k}" data-v="X">X</button>
+        <button class="pill ${r[k]==="O"?"active-o":""}" data-a="set" data-id="${m.id}" data-f="${k}" data-v="O">O</button></div></div>`).join("");
+      return `<article class="member"><div class="member-head"><span class="member-name">${esc(m.name)}</span></div>
+        <div class="field-grid">${st}</div>
+        <div class="note-label">특이사항 내용</div>
+        <textarea data-note="${m.id}" maxlength="500" placeholder="필요한 경우 특이사항을 입력하세요">${esc(r.note)}</textarea>
+        <div class="actions"><button class="secondary" data-a="note" data-id="${m.id}">특이사항 저장</button></div></article>`;
+    }).join("") : `<div class="notice">먼저 '인원 관리'에서 이름을 추가하세요.</div>`;
+  }
+  function renderRoster() {
+    $("rosterCount").textContent = `(${data.members.length}/${MAX})`;
+    $("rosterList").innerHTML = data.members.map(m => `<div class="date-row" style="margin-bottom:8px">
+      <input value="${esc(m.name)}" maxlength="20" data-a="rename" data-id="${m.id}">
+      <button class="danger" data-a="del" data-id="${m.id}">삭제</button></div>`).join("");
+  }
+  function render() {
+    renderStats();
+    if (editing()) { needsRender = true; return; }
+    needsRender = false; renderMembers(); renderRoster();
+  }
+
+  async function refresh() {
+    if (!room || !cfg || loading) return;
+    loading = true;
+    const d = date();
+    try {
+      const res = await rpc("rr_get", {p_room:room, p_date:d});
+      if (d === date()) {
+        const j = JSON.stringify(res);
+        if (j !== lastJson) { lastJson = j; data = res; render(); }
+        else if (needsRender && !editing()) render();
+      }
+      online = true;
+    } catch (e) { online = false; }
+    loading = false; setStatus();
+  }
+  function startPolling() {
+    clearInterval(timer);
+    timer = setInterval(() => { if (!document.hidden) refresh(); }, POLL_MS);
+    refresh();
+  }
+  async function act(fn, args) {
+    try { await rpc(fn, args); } catch (e) { alert(e.message); }
+    lastJson = ""; await refresh();
+  }
+
+  function boot() {
+    $("reportDate").value = today(); clampDate();
+    if (!cfg || !cfg.url || !cfg.key) { setView("configView"); return; }
+    if (!room) { setView("roomView"); return; }
+    setView("appView"); setStatus(); startPolling();
+  }
+
+  $("saveConfig").addEventListener("click", () => {
+    const url = $("projectUrl").value.trim().replace(/\/+$/,""), key = $("publicKey").value.trim();
+    if (!/^https:\/\/[a-zA-Z0-9.-]+$/.test(url) || !key) return flash("configMsg","Project URL과 공개용 키를 정확히 입력하세요.");
+    cfg = {url, key}; lset(KEY_CFG, JSON.stringify(cfg)); boot();
+  });
+  $("resetConfig").addEventListener("click", () => { ldel(KEY_CFG); if (!(EMBED_URL && EMBED_KEY)) cfg = null; boot(); });
+  $("enterRoom").addEventListener("click", () => {
+    const c = $("roomCode").value.trim();
+    if (c.length < 6) return flash("roomMsg","방 코드는 6자 이상이어야 합니다.");
+    room = c; lset(KEY_ROOM, room); lastJson = ""; data = {members:[], reports:{}}; boot();
+  });
+  $("leaveRoom").addEventListener("click", () => { clearInterval(timer); room = ""; ldel(KEY_ROOM); drafts = {}; boot(); });
+  $("reportDate").addEventListener("change", () => { lastJson = ""; refresh(); });
+  $("toggleRoster").addEventListener("click", () => show("rosterView", $("rosterView").classList.contains("hidden")));
+  $("addMember").addEventListener("click", async () => {
+    const n = $("newName").value.trim();
+    if (!n) return flash("rosterMsg","이름을 입력하세요.");
+    if (data.members.length >= MAX) return flash("rosterMsg","최대 8명까지만 등록할 수 있습니다.");
+    $("newName").value = ""; await act("rr_add_member", {p_room:room, p_name:n});
+  });
+  $("rosterList").addEventListener("change", e => {
+    const el = e.target.closest("input[data-a=rename]"); if (!el) return;
+    const n = el.value.trim();
+    if (!n) { needsRender = true; lastJson = ""; refresh(); return; }
+    act("rr_rename_member", {p_room:room, p_id:el.dataset.id, p_name:n});
+  });
+  $("rosterList").addEventListener("click", e => {
+    const b = e.target.closest("button[data-a=del]"); if (!b) return;
+    if (b.dataset.armed !== "1") { b.dataset.armed="1"; b.textContent="정말 삭제?"; setTimeout(()=>{ b.dataset.armed=""; b.textContent="삭제"; }, 2500); return; }
+    act("rr_delete_member", {p_room:room, p_id:b.dataset.id});
+  });
+  $("members").addEventListener("input", e => {
+    const t = e.target.closest("textarea[data-note]"); if (t) drafts[t.dataset.note] = t.value;
+  });
+  $("members").addEventListener("click", async e => {
+    const b = e.target.closest("button[data-a]"); if (!b) return;
+    const id = b.dataset.id;
+    if (b.dataset.a === "set") {
+      data.reports[id] = {...(data.reports[id]||{}), [b.dataset.f]:b.dataset.v}; render();
+      act("rr_set_field", {p_room:room, p_member:id, p_date:date(), p_field:b.dataset.f, p_value:b.dataset.v});
+    } else if (b.dataset.a === "note") {
+      const t = document.querySelector(`textarea[data-note="${id}"]`);
+      const note = (t ? t.value : "").trim(); delete drafts[id];
+      await act("rr_set_note", {p_room:room, p_member:id, p_date:date(), p_note:note});
+    }
+  });
+  $("shareText").addEventListener("click", async () => {
+    const ms = data.members, lines = [`[공동 보고] ${date()}`];
+    fields.forEach(([k,l]) => { const o = ms.filter(m => rec(m.id)[k]==="O"); lines.push(`${l}: O ${o.length}명 / X ${ms.length-o.length}명` + (o.length ? ` (O: ${o.map(m=>m.name).join(", ")})` : "")); });
+    ms.forEach(m => { const n = rec(m.id).note; if (n) lines.push(`- ${m.name}: ${n}`); });
+    let ok = true; try { await navigator.clipboard.writeText(lines.join("\n")); } catch { ok = false; }
+    flash("copyMsg", ok ? "요약을 복사했습니다. 메신저에 붙여넣으세요." : "복사하지 못했습니다.");
+  });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+  boot();
+})();
+</script>
+</body>
+</html>
